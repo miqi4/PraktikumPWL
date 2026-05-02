@@ -10,6 +10,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
 
 class PostsTable
 {
@@ -17,19 +20,53 @@ class PostsTable
     {
         return $table
             ->columns([
-            TextColumn::make('title'),
-            TextColumn::make('slug'),
-            TextColumn::make('category.nama'),
+            TextColumn::make('id')
+            ->label('ID')
+            ->toggleable(isToggledHiddenByDefault: true)
+            ->sortable(),
+            TextColumn::make('title')
+            ->sortable()
+            ->searchable()
+            ->toggleable(),
+            TextColumn::make('slug')
+            ->sortable()
+            ->searchable()
+            ->toggleable(),
+            TextColumn::make('category.nama')
+            ->sortable()
+            ->searchable()
+            ->toggleable(),
             ColorColumn::make('color'),
             ImageColumn::make('image')
             ->disk('public')
             ->visibility('public'),
             IconColumn::make('published') 
                 ->boolean(),
-        ])
-            ->filters([
-                //
+            TextColumn::make('created_at')
+            ->label('Created At')
+            ->dateTime()
+            ->sortable(),
+            TextColumn::make('tags')
+            ->label('Tags')
+            ->toggleable(isToggledHiddenByDefault: true),
+            IconColumn::make('published')
+            ->boolean()
+            ->label('Published'),
+        ])->defaultSort('created_at', 'desc')
+            ->filters([Filter::make('created_at')
+            ->form([
+                DatePicker::make('created_at')
             ])
+            ->query(function ($query, $data) {
+                return $query->when(
+                    $data['created_at'],
+                    fn ($query, $date) => $query->whereDate('created_at', $date)
+                );
+            }),
+            SelectFilter::make('category_id')
+            ->relationship('category', 'nama')
+            ->preload(),
+        ])
             ->recordActions([
                 EditAction::make(),
             ])
