@@ -13,19 +13,24 @@ class Post extends Model
         'color',
         'image',
         'body',
-        'tags',
         'published',
         'published_at',
-        ];
+    ];
+
     protected $casts = [
-        'tags' => 'array',
         'published' => 'boolean',
         'published_at' => 'date',
-        ];
-    
-        
+    ];
+
+    // Relasi ke Category (1 Post = 1 Category)
     public function category()
     {
-    return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class);
+    }
+
+    // Relasi Many-to-Many ke Tag
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'post_tag');
     }
 }
